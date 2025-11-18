@@ -2,7 +2,7 @@
 // cd C:\Users\dstis\Downloads\Score-Calculator-main\Score-Calculator-main; & "$env:USERPROFILE\.deno\bin\deno.exe" task dev -- --port 5173
 
 import btnimg from "./btnimg.png";
-import { gameData } from "./gamedata.js";
+import { gameData } from "./gamedata.ts";
 import meterimg from "./meterimg.png";
 import pntimg from "./pntimg.png";
 import gameimg from "./gameicons.png";
