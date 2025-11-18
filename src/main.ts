@@ -33,7 +33,7 @@ const tileSize: number = 30;
 const selectOffsetX: number = 90;
 const loadDist = 1;
 
-let currGame = 1;
+let currGame = 0;
 
 let gd = gameData[currGame];
 let pressCounter: number;
