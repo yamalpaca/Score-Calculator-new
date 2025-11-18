@@ -1,11 +1,8 @@
-// netstat -ano | findstr :3000
-// cd C:\Users\dstis\Downloads\Score-Calculator-main\Score-Calculator-main; & "$env:USERPROFILE\.deno\bin\deno.exe" task dev -- --port 5173
-
 import btnimg from "./btnimg.png";
 import { gameData } from "./gamedata.ts";
+import gameimg from "./gameicons.png";
 import meterimg from "./meterimg.png";
 import pntimg from "./pntimg.png";
-import gameimg from "./gameicons.png";
 import "./style.css";
 
 const customFont = new FontFace("SeuratPro", "/src/FOT-SeuratPro-B.otf");
