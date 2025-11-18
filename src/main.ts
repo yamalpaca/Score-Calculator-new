@@ -4,7 +4,6 @@ import gameimg from "./gameicons.png";
 import meterimg from "./meterimg.png";
 import pntimg from "./pntimg.png";
 import "./style.css";
-//hi
 
 const customFont = new FontFace("SeuratPro", "/src/FOT-SeuratPro-B.otf");
 document.fonts.add(customFont);
