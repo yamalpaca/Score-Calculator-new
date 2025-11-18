@@ -1,5 +1,164 @@
-.icon {
-  width: 64px;
-  vertical-align: top;
-  border: 1px solid salmon;
+body {
+  background-color: rgb(48, 48, 48);
+}
+
+@font-face {
+  font-family: "SeuratPro";
+  src: url("/src/FOT-SeuratPro-B.otf") format("opentype");
+}
+
+.chart-container {
+  position: relative;
+  display: inline-block;
+  text-align: center;
+}
+
+.title-sub {
+  font: 16px Kurokane;
+  margin: 0 0 -5px 0;
+  letter-spacing: 0px;
+  color: rgb(159, 159, 159);
+}
+
+.title-main {
+  font: 36px Kurokane;
+  margin: 0 0 20px 0;
+  letter-spacing: -1px;
+  color: rgb(255, 255, 255);
+}
+
+.dropdown {
+  padding: 5px;
+  font: 14px SeuratPro;
+  background-color: rgba(110, 90, 147, 1);
+  color: white;
+  border-radius: 5px;
+}
+
+.chart-text-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.chart-text-row p {
+  margin: 0;
+  padding: 4px 8px;
+}
+
+.meter-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.meter-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.meter-container p {
+  margin: 0 100px 0 0;
+  padding: 0 0 20px 0;
+  align-self: flex-end;
+  text-align: right;
+  -webkit-text-stroke: 0.75px white;
+}
+
+canvas {
+  display: block;
+}
+
+.chart-canvas {
+  border-radius: 10px;
+  border: 2px solid white;
+}
+
+.press-text, .diff-text {
+  font: 12px SeuratPro;
+  margin: 0;
+  color: rgb(134, 134, 134);
+}
+
+.meter-canvas {
+  border: 1.5px solid white;
+  border-radius: 16px;
+}
+
+.score-text {
+  font-family: Kurokane;
+  font-size: 32px;
+  text-align: right;
+  letter-spacing: -2px;
+  color: #00b4ff;
+}
+
+.credits {
+  font: 12px SeuratPro;
+  margin: 20px 0 0 0;
+  color: rgb(134, 134, 134);
+}
+
+.data-box {
+  background-color: #00385b;
+  border-radius: 10px;
+  border: 2px solid white;
+  padding: 10px;
+  display: inline-block;
+}
+
+.data-table {
+  border-collapse: collapse;
+  font: 16px SeuratPro;
+  border: none;
+}
+
+.custom-select {
+  position: relative;
+  width: 300px;
+  cursor: pointer;
+}
+
+.selected {
+  padding: 4px;
+  border: 2px solid white;
+  background: #9900fe;
+  text-align: left;
+  font: 18px Kurokane;
+  display: flex;
+  align-items: center;
+}
+
+.option {
+  padding: 4px;
+  border: 1px solid #450073;
+  text-align: left;
+  font: 18px Kurokane;
+  color: #000;
+  display: flex;
+  align-items: center;
+  background: #9900fe;
+  color: white;
+}
+
+.options {
+  display: none;
+  position: absolute;
+  width: 100%;
+  background: white;
+  text-align: left;
+}
+
+.options.open {
+  display: block;
+}
+
+.selected::after {
+  content: "▼";
+  font-size: 14px;
+  color: white;
+  position: absolute;
+  right: 8px;
 }
