@@ -1,6 +1,6 @@
 # RHM Score Calculator
 
-v.0.1.1
+v.0.4.0
 
 yamalpaca
 
@@ -17,11 +17,18 @@ yamalpaca
 
 ## Change Log
 
-v.0.1.3
+v.0.4.0
+
+- added more types of inputs
+- added inputs that require holding and releasing buttons
+- added Fillbots
+- revised First Contact, Second Contact, and Citrus Remix
+
+v.0.3.0
 
 - added separators
 
-v.0.1.2
+v.0.2.0
 
 - improved UI and dropdown
 

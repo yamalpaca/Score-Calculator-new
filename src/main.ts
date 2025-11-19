@@ -1,8 +1,13 @@
+// & "$HOME\.deno\bin\deno.exe" --version
+// $env:PATH += ";$HOME\.deno\bin"
+// deno --version
+// deno task dev
+
 import { gameData } from "./gamedata.ts";
 import btnimg from "./images/btnimg.png";
 import gameimg from "./images/gameicons.png";
+import inputimg from "./images/inputimg.png";
 import meterimg from "./images/meterimg.png";
-import pntimg from "./images/pntimg.png";
 import "./style.css";
 
 const customFont = new FontFace("SeuratPro", "/src/fonts/FOT-SeuratPro-B.otf");
@@ -31,6 +36,25 @@ const selectOffsetX: number = 90;
 const loadDist = 1;
 
 let currGame = 0;
+const STORAGE_KEY = "game-state";
+function loadState(): number {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return 0;
+    const parsed = JSON.parse(raw) as number;
+    return parsed;
+  } catch {
+    return 0;
+  }
+}
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(currGame));
+  } catch {
+    // ignore
+  }
+}
+currGame = loadState();
 
 let gd = gameData[currGame];
 let pressCounter: number;
@@ -113,20 +137,21 @@ let dataTable = document.createElement("div");
 chartContainer.append(dataTable);
 
 const creditsText = document.createElement("h1");
-creditsText.textContent = "yamalpaca - v.0.1.3";
+creditsText.textContent = "yamalpaca - v.0.4.0";
 creditsText.className = "credits";
 document.body.append(creditsText);
 
 const btnIcons = new Image();
 btnIcons.src = btnimg;
-const pntIcons = new Image();
-pntIcons.src = pntimg;
+const inputIcons = new Image();
+inputIcons.src = inputimg;
 const meter = new Image();
 meter.src = meterimg;
 const gameIcons = new Image();
 gameIcons.src = gameimg;
 
 const btnPressed: boolean[] = [];
+const btnActive: boolean[] = [];
 const btnAccuracy: number[] = [];
 
 function loadGame(index: number) {
@@ -143,8 +168,10 @@ function loadGame(index: number) {
   prevScore = 100;
   critData.splice(0, critData.length);
   btnPressed.splice(0, btnPressed.length);
+  btnActive.splice(0, btnActive.length);
   btnAccuracy.splice(0, btnAccuracy.length);
   btnPressed.push(...Array(gd.inputs.length).fill(true));
+  btnActive.push(...Array(gd.inputs.length).fill(true));
   btnAccuracy.push(...Array(gd.inputs.length).fill(100));
 
   diffText.textContent = "";
@@ -198,11 +225,41 @@ function updateData() {
   }
 
   for (let i: number = 0; i < gd.inputs.length; i++) {
-    critData[gd.inputs[i].criteria].total++;
-    if (btnPressed[i]) {
-      pressCounter++;
-      critData[gd.inputs[i].criteria].hits++;
-      critData[gd.inputs[i].criteria].score += btnAccuracy[i];
+    const input = gd.inputs[i];
+    btnActive[i] = !(input.combo && input.combotype != 1 &&
+      (!btnPressed[i - 1] || !btnActive[i - 1]));
+
+    if (!input.square) {
+      critData[input.criteria].total += input.multi;
+    } else {
+      if (input.combo) {
+        if (input.combotype == 1 || btnActive[i]) {
+          critData[input.criteria].total += input.multi;
+        }
+      } else {
+        if (btnPressed[i]) {
+          critData[input.criteria].total += input.multi;
+        }
+      }
+    }
+
+    if (
+      [4, 6].includes(input.button) && btnPressed[i] && i < gd.inputs.length - 1
+    ) {
+      if ([5, 7].includes(gd.inputs[i + 1].button)) {
+        if (btnPressed[i + 1] == false) {
+          pressCounter++;
+        }
+      } else {
+        pressCounter++;
+      }
+    } else {
+      if (btnPressed[i] && btnActive[i]) pressCounter++;
+    }
+
+    if (btnPressed[i] && btnActive[i]) {
+      critData[input.criteria].hits += input.multi;
+      critData[input.criteria].score += btnAccuracy[i] * input.multi;
     }
   }
 
@@ -260,7 +317,7 @@ function drawHeader() {
       (i + 1) * tileSize,
       0,
       critData[i].id,
-      pntIcons,
+      inputIcons,
       chartCanvas,
     );
   }
@@ -400,20 +457,81 @@ function drawChart() {
     }
     ctx.setLineDash([]);
 
+    if (gd.inputs[ioffset].combo && gd.inputs[ioffset].combotype != 2) {
+      ctx.lineWidth = 8;
+      ctx.strokeStyle = "black";
+      ctx.setLineDash([]);
+
+      if (!btnPressed[ioffset] || !btnActive[ioffset]) {
+        ctx.lineWidth = 4;
+        ctx.setLineDash([4, 5]);
+      }
+
+      ctx.beginPath();
+      ctx.moveTo(
+        ((i + 0.5) * tileSize) + selectOffsetX - (scrollX % 30),
+        (gd.inputs[ioffset].criteria + 1.5) * tileSize - 1,
+      );
+      ctx.lineTo(
+        ((i + 1.5) * tileSize) + selectOffsetX - (scrollX % 30),
+        (gd.inputs[ioffset + 1].criteria + 1.5) * tileSize - 1,
+      );
+      ctx.stroke();
+    }
+
+    ctx.setLineDash([]);
     ctx.filter = "brightness(100%)";
+
     const iindex = gd.inputs[ioffset].criteria == critData.length - 1
       ? 4
       : gd.inputs[ioffset].criteria;
-    const itype = btnPressed[ioffset] ? 1 : 4;
+    let itype = (btnPressed[ioffset] && btnActive[ioffset]) ? 1 : 2;
+
+    if (gd.inputs[ioffset].square) {
+      itype += 2;
+
+      if (
+        gd.inputs[ioffset].combo && !btnPressed[ioffset] && btnActive[ioffset]
+      ) {
+        itype = 2;
+      }
+    }
 
     drawIcon(
       (i * tileSize) + selectOffsetX - (scrollX % 30),
       (gd.inputs[ioffset].criteria + 1) * tileSize,
       itype,
       iindex,
-      pntIcons,
+      inputIcons,
       chartCanvas,
     );
+
+    if (gd.inputs[ioffset].multi > 1) {
+      ctx.fillStyle = "black";
+      if (gd.inputs[ioffset].multi > 9) {
+        ctx.fillRect(
+          (i * tileSize) + selectOffsetX - (scrollX % 30) + 11,
+          (gd.inputs[ioffset].criteria + 1) * tileSize + 15,
+          18,
+          13,
+        );
+      } else {
+        ctx.fillRect(
+          (i * tileSize) + selectOffsetX - (scrollX % 30) + 18,
+          (gd.inputs[ioffset].criteria + 1) * tileSize + 15,
+          11,
+          13,
+        );
+      }
+
+      ctx.textAlign = "right";
+      ctx.fillStyle = "white";
+      ctx.fillText(
+        gd.inputs[ioffset].multi.toString(),
+        (i * tileSize) + selectOffsetX - (scrollX % 30) + 28,
+        (gd.inputs[ioffset].criteria + 1) * tileSize + 26,
+      );
+    }
   }
 
   ctx.filter = "none";
@@ -431,6 +549,42 @@ function drawInterface() {
     tileSize * 2,
   );
 
+  for (let i: number = -loadDist; i < maxWidth + loadDist + 1; i++) {
+    const ioffset = i + Math.floor(scrollX / tileSize);
+    const input = gd.inputs[ioffset];
+
+    if (!input) continue;
+    if (input.button < 4) continue;
+
+    const hold = [4, 6].includes(input.button);
+    if (btnActive[ioffset + (hold ? 1 : 0)] == false) continue;
+
+    ctx.fillStyle = input.button > 5 ? "#7F5E00" : "#8D1A1A";
+
+    if (btnActive[ioffset + (hold ? 1 : -1)] == false) continue;
+
+    if (btnPressed[ioffset]) {
+      const adjInput = gd.inputs[ioffset + (hold ? 1 : -1)];
+      if (adjInput) {
+        if (
+          (hold ? [5, 7] : [4, 6]).includes(adjInput.button) &&
+          btnPressed[ioffset + (hold ? 1 : -1)] == false
+        ) {
+          ctx.fillStyle = input.button > 5 ? "#5E5E5E" : "#333333";
+        }
+      }
+    } else {
+      ctx.fillStyle = input.button > 5 ? "#5E5E5E" : "#333333";
+    }
+
+    ctx.fillRect(
+      (i * tileSize) + selectOffsetX - (scrollX % 30) + (hold ? 15 : 0),
+      (critData.length + 1) * tileSize + 1,
+      15,
+      28,
+    );
+  }
+
   if (selectX > -1 && selectX < gd.inputs.length) {
     ctx.fillStyle = "#ffffff30";
     ctx.fillRect(
@@ -447,10 +601,13 @@ function drawInterface() {
 
     if (!gd.inputs[ioffset]) continue;
 
+    ctx.filter = "brightness(100%)";
+
     const sep = gd.separators?.find((s) => s.index === ioffset);
     if (sep) {
       if (sep.index > 0) {
         const drawX = (ioffset * tileSize) + selectOffsetX - scrollX;
+        ctx.lineWidth = 1;
         ctx.strokeStyle = "white";
         ctx.beginPath();
         ctx.setLineDash([5, 5]);
@@ -461,7 +618,17 @@ function drawInterface() {
     }
     ctx.setLineDash([]);
 
-    ctx.filter = "brightness(100%)";
+    if (!btnActive[ioffset]) {
+      drawIcon(
+        (i * tileSize) + selectOffsetX - (scrollX % 30),
+        (critData.length + 1) * tileSize,
+        0,
+        0,
+        btnIcons,
+        chartCanvas,
+      );
+      continue;
+    }
 
     if (selectX == ioffset && selectY == 0) {
       ctx.filter = "brightness(150%)";
@@ -612,7 +779,7 @@ function updateText() {
             const ctx = miniCanvas.getContext("2d")!;
             ctx.filter = "invert(100%)";
 
-            drawIcon(0, 0, 0, critData[i - 1].id, pntIcons, miniCanvas);
+            drawIcon(0, 0, 0, critData[i - 1].id, inputIcons, miniCanvas);
             cell.appendChild(miniCanvas);
           }
 
@@ -684,7 +851,7 @@ function badRounding(n: number) {
 }
 
 btnIcons.onload = () => updatePage(true);
-pntIcons.onload = () => updatePage(true);
+inputIcons.onload = () => updatePage(true);
 meter.onload = () => updatePage(true);
 gameIcons.onload = () => updatePage(true);
 document.fonts.ready.then(() => {
@@ -731,15 +898,19 @@ chartCanvas.addEventListener("mousemove", (e) => {
     selectX = -1;
   }
 
-  if (mouseFocus == 2 && selectY == 0) {
-    btnPressed[selectX] = drawState;
-    if (prevSelectX != selectX || prevSelectY != selectY) updatePage(true);
-  } else if ((mouseFocus == 3 || mouseFocus == 4)) {
-    btnAccuracy[selectX] = drawAccState;
-    if (selectX != prevSelectX || selectY != 1) {
-      mouseFocus = 4;
+  if (btnActive[selectX]) {
+    if (mouseFocus == 2 && selectY == 0) {
+      btnPressed[selectX] = drawState;
+      if (prevSelectX != selectX || prevSelectY != selectY) updatePage(true);
+    } else if ((mouseFocus == 3 || mouseFocus == 4)) {
+      btnAccuracy[selectX] = drawAccState;
+      if (selectX != prevSelectX || selectY != 1) {
+        mouseFocus = 4;
+      }
+      if (prevSelectX != selectX || prevSelectY != selectY) updatePage(true);
+    } else {
+      if (prevSelectX != selectX || prevSelectY != selectY) updatePage(false);
     }
-    if (prevSelectX != selectX || prevSelectY != selectY) updatePage(true);
   } else {
     if (prevSelectX != selectX || prevSelectY != selectY) updatePage(false);
   }
@@ -753,7 +924,8 @@ chartCanvas.addEventListener("mousedown", (e) => {
   mouseFocus = 5;
   document.body.style.cursor = "grabbing";
 
-  if (e.offsetX < selectOffsetX) {
+  if (e.offsetX < selectOffsetX || !btnActive[selectX]) {
+    document.body.style.cursor = "default";
     mouseFocus = 1;
     return;
   }
@@ -769,6 +941,7 @@ chartCanvas.addEventListener("mousedown", (e) => {
     mouseFocus = 3;
     drawAccState = btnAccuracy[selectX];
   }
+
   if (document.body.style.cursor) {
     updatePage(true);
   }
@@ -886,6 +1059,7 @@ function drawGameImg(index: number): HTMLCanvasElement {
       optionsContainer.classList.remove("open");
 
       currGame = i;
+      saveState();
       loadGame(currGame);
 
       const allOptions = optionsContainer.querySelectorAll(
@@ -912,6 +1086,19 @@ function drawGameImg(index: number): HTMLCanvasElement {
   selected.addEventListener("click", (e) => {
     e.stopPropagation();
     optionsContainer.classList.toggle("open");
+
+    if (optionsContainer.classList.contains("open")) {
+      const selectedOption = optionsContainer.querySelector(
+        `.option[data-value="${selected.dataset.value}"]`,
+      ) as HTMLElement;
+
+      if (selectedOption) {
+        selectedOption.scrollIntoView({
+          block: "center",
+          behavior: "instant",
+        });
+      }
+    }
   });
 
   document.addEventListener("click", (e) => {
