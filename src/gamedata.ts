@@ -5,6 +5,7 @@ export interface Input {
   square: boolean;
   combo: boolean;
   combotype: number;
+  extracrit: number;
 }
 
 export interface Separator {
@@ -29,6 +30,7 @@ const inD: Input = {
   square: false,
   combo: false,
   combotype: 0,
+  extracrit: -1,
 };
 
 function fillPair(
@@ -69,7 +71,7 @@ export const gameData: Game[] = [
       { ...inD, criteria: 2 },
       { ...inD, criteria: 0 },
       ...Array(3).fill({ ...inD, criteria: 1 }),
-      { ...inD, criteria: 0 },
+      { ...inD, criteria: 0, multi: 0 },
     ],
     separators: [{ index: 7 }],
   },

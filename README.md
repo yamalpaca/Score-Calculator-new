@@ -1,6 +1,6 @@
 # RHM Score Calculator
 
-v.0.4.0
+v.0.4.1
 
 yamalpaca
 
@@ -16,6 +16,10 @@ yamalpaca
 ---
 
 ## Change Log
+
+v.0.4.1
+
+- added two more input types
 
 v.0.4.0
 

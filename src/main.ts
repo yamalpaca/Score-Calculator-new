@@ -137,7 +137,7 @@ let dataTable = document.createElement("div");
 chartContainer.append(dataTable);
 
 const creditsText = document.createElement("h1");
-creditsText.textContent = "yamalpaca - v.0.4.0";
+creditsText.textContent = "yamalpaca - v.0.4.1";
 creditsText.className = "credits";
 document.body.append(creditsText);
 
@@ -242,6 +242,9 @@ function updateData() {
         }
       }
     }
+    if (input.extracrit > -1) {
+      critData[input.extracrit].total++;
+    }
 
     if (
       [4, 6].includes(input.button) && btnPressed[i] && i < gd.inputs.length - 1
@@ -260,6 +263,11 @@ function updateData() {
     if (btnPressed[i] && btnActive[i]) {
       critData[input.criteria].hits += input.multi;
       critData[input.criteria].score += btnAccuracy[i] * input.multi;
+
+      if (input.extracrit > -1) {
+        critData[input.extracrit].hits++;
+        critData[input.extracrit].score += btnAccuracy[i];
+      }
     }
   }
 
@@ -390,8 +398,9 @@ function drawChart() {
 
   for (let i: number = -loadDist; i < maxWidth + loadDist + 1; i++) {
     const ioffset = i + Math.floor(scrollX / tileSize);
+    const input = gd.inputs[ioffset];
 
-    if (!gd.inputs[ioffset]) continue;
+    if (!input) continue;
 
     if (!sepimg) {
       if ((ioffset % 5) == 4) {
@@ -457,7 +466,7 @@ function drawChart() {
     }
     ctx.setLineDash([]);
 
-    if (gd.inputs[ioffset].combo && gd.inputs[ioffset].combotype != 2) {
+    if (input.combo && input.combotype != 2) {
       ctx.lineWidth = 8;
       ctx.strokeStyle = "black";
       ctx.setLineDash([]);
@@ -470,7 +479,7 @@ function drawChart() {
       ctx.beginPath();
       ctx.moveTo(
         ((i + 0.5) * tileSize) + selectOffsetX - (scrollX % 30),
-        (gd.inputs[ioffset].criteria + 1.5) * tileSize - 1,
+        (input.criteria + 1.5) * tileSize - 1,
       );
       ctx.lineTo(
         ((i + 1.5) * tileSize) + selectOffsetX - (scrollX % 30),
@@ -482,43 +491,53 @@ function drawChart() {
     ctx.setLineDash([]);
     ctx.filter = "brightness(100%)";
 
-    const iindex = gd.inputs[ioffset].criteria == critData.length - 1
-      ? 4
-      : gd.inputs[ioffset].criteria;
+    const iindex = input.criteria == critData.length - 1 ? 4 : input.criteria;
     let itype = (btnPressed[ioffset] && btnActive[ioffset]) ? 1 : 2;
 
-    if (gd.inputs[ioffset].square) {
+    if (input.square) {
       itype += 2;
 
       if (
-        gd.inputs[ioffset].combo && !btnPressed[ioffset] && btnActive[ioffset]
+        input.combo && !btnPressed[ioffset] && btnActive[ioffset]
       ) {
         itype = 2;
       }
     }
 
-    drawIcon(
-      (i * tileSize) + selectOffsetX - (scrollX % 30),
-      (gd.inputs[ioffset].criteria + 1) * tileSize,
-      itype,
-      iindex,
-      inputIcons,
-      chartCanvas,
-    );
+    if (input.multi > 0) {
+      drawIcon(
+        (i * tileSize) + selectOffsetX - (scrollX % 30),
+        (input.criteria + 1) * tileSize,
+        itype,
+        iindex,
+        inputIcons,
+        chartCanvas,
+      );
+      if (input.extracrit > -1) {
+        drawIcon(
+          (i * tileSize) + selectOffsetX - (scrollX % 30),
+          (input.extracrit + 1) * tileSize,
+          itype,
+          input.extracrit,
+          inputIcons,
+          chartCanvas,
+        );
+      }
+    }
 
-    if (gd.inputs[ioffset].multi > 1) {
+    if (input.multi > 1) {
       ctx.fillStyle = "black";
-      if (gd.inputs[ioffset].multi > 9) {
+      if (input.multi > 9) {
         ctx.fillRect(
           (i * tileSize) + selectOffsetX - (scrollX % 30) + 11,
-          (gd.inputs[ioffset].criteria + 1) * tileSize + 15,
+          (input.criteria + 1) * tileSize + 15,
           18,
           13,
         );
       } else {
         ctx.fillRect(
           (i * tileSize) + selectOffsetX - (scrollX % 30) + 18,
-          (gd.inputs[ioffset].criteria + 1) * tileSize + 15,
+          (input.criteria + 1) * tileSize + 15,
           11,
           13,
         );
@@ -527,9 +546,9 @@ function drawChart() {
       ctx.textAlign = "right";
       ctx.fillStyle = "white";
       ctx.fillText(
-        gd.inputs[ioffset].multi.toString(),
+        input.multi.toString(),
         (i * tileSize) + selectOffsetX - (scrollX % 30) + 28,
-        (gd.inputs[ioffset].criteria + 1) * tileSize + 26,
+        (input.criteria + 1) * tileSize + 26,
       );
     }
   }
@@ -646,19 +665,21 @@ function drawInterface() {
       chartCanvas,
     );
 
-    ctx.filter = "brightness(100%)";
-    ctx.fillStyle = "white";
-    ctx.letterSpacing = "1px";
-    ctx.textAlign = "center";
-    ctx.font = "12px Arial";
+    if (gd.inputs[ioffset].multi > 0) {
+      ctx.filter = "brightness(100%)";
+      ctx.fillStyle = "white";
+      ctx.letterSpacing = "1px";
+      ctx.textAlign = "center";
+      ctx.font = "12px Arial";
 
-    if (!btnPressed[ioffset]) ctx.filter = "brightness(50%)";
+      if (!btnPressed[ioffset]) ctx.filter = "brightness(50%)";
 
-    ctx.fillText(
-      btnAccuracy[ioffset].toString(),
-      (i * tileSize) + selectOffsetX + 15 - (scrollX % 30),
-      (critData.length + 2) * tileSize + 20,
-    );
+      ctx.fillText(
+        btnAccuracy[ioffset].toString(),
+        (i * tileSize) + selectOffsetX + 15 - (scrollX % 30),
+        (critData.length + 2) * tileSize + 20,
+      );
+    }
   }
   ctx.filter = "none";
 }
@@ -938,6 +959,10 @@ chartCanvas.addEventListener("mousedown", (e) => {
     drawState = !btnPressed[selectX];
     btnPressed[selectX] = !btnPressed[selectX];
   } else if (selectY == 1) {
+    if (gd.inputs[selectX].multi == 0) {
+      mouseFocus = 1;
+      return;
+    }
     mouseFocus = 3;
     drawAccState = btnAccuracy[selectX];
   }
