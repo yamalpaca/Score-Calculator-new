@@ -71,7 +71,7 @@ export const gameData: Game[] = [
       { ...inD, criteria: 2 },
       { ...inD, criteria: 0 },
       ...Array(3).fill({ ...inD, criteria: 1 }),
-      { ...inD, criteria: 0, multi: 0 },
+      { ...inD, criteria: 0 },
     ],
     separators: [{ index: 7 }],
   },
