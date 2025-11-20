@@ -1,6 +1,6 @@
 # RHM Score Calculator
 
-v.0.4.1
+v.0.5.0
 
 yamalpaca
 
@@ -16,6 +16,10 @@ yamalpaca
 ---
 
 ## Change Log
+
+v.0.5.0
+
+- every minigame has been added, minus Night Walk and Quiz Show
 
 v.0.4.1
 

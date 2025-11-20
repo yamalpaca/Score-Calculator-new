@@ -59,6 +59,7 @@ currGame = loadState();
 let gd = gameData[currGame];
 let pressCounter: number;
 let finalScore: number;
+let maxScore: number;
 let prevScore: number;
 let selectX: number;
 let prevSelectX: number;
@@ -137,7 +138,7 @@ let dataTable = document.createElement("div");
 chartContainer.append(dataTable);
 
 const creditsText = document.createElement("h1");
-creditsText.textContent = "yamalpaca - v.0.4.1";
+creditsText.textContent = "yamalpaca - v.0.5.0";
 creditsText.className = "credits";
 document.body.append(creditsText);
 
@@ -166,6 +167,7 @@ function loadGame(index: number) {
   scrollX = 0;
   finalScore = 100;
   prevScore = 100;
+  maxScore = 0;
   critData.splice(0, critData.length);
   btnPressed.splice(0, btnPressed.length);
   btnActive.splice(0, btnActive.length);
@@ -210,6 +212,7 @@ function updateData() {
   critData.splice(0, critData.length);
   prevScore = finalScore;
   finalScore = 0;
+  maxScore = 0;
   pressCounter = 0;
 
   for (let i: number = 0; i < gd.critweight.length; i++) {
@@ -272,8 +275,17 @@ function updateData() {
   }
 
   critData.forEach((c: Criteria) => {
-    c.result = badRounding(c.score / (c.total * 100)) * c.weight;
-    finalScore += c.result;
+    if (c.total > 0) maxScore += c.weight;
+  });
+
+  critData.forEach((c: Criteria) => {
+    if (c.total == 0) {
+      c.result = 0;
+    } else {
+      c.result = badRounding(c.score / (c.total * 100)) *
+        (c.weight / maxScore) * 100;
+      finalScore += c.result;
+    }
   });
 }
 
@@ -394,7 +406,7 @@ function drawChart() {
   ctx.textAlign = "center";
   ctx.font = "12px Arial";
 
-  const sepimg = gd.separators?.find((s) => s.img);
+  //const sepimg = gd.separators?.find((s) => s.img);
 
   for (let i: number = -loadDist; i < maxWidth + loadDist + 1; i++) {
     const ioffset = i + Math.floor(scrollX / tileSize);
@@ -402,6 +414,7 @@ function drawChart() {
 
     if (!input) continue;
 
+    /*
     if (!sepimg) {
       if ((ioffset % 5) == 4) {
         ctx.filter = "brightness(50%)";
@@ -413,6 +426,7 @@ function drawChart() {
         );
       }
     }
+    */
 
     const sep = gd.separators?.find((s) => s.index === ioffset);
     if (sep) {
@@ -447,7 +461,7 @@ function drawChart() {
         ctx.fillText(
           sep.msg,
           (ioffset * tileSize) + selectOffsetX - scrollX + 4,
-          28,
+          12,
         );
       }
       if (sep.img) {
@@ -820,7 +834,13 @@ function updateText() {
           cell.style.width = "80px";
           if (i == 0) text = "Weight";
           else {
-            text = critData[i - 1].weight + "%";
+            if (critData[i - 1].total == 0) {
+              text = "0%";
+            } else {
+              text =
+                (Math.floor(critData[i - 1].weight / maxScore * 10000) / 100) +
+                "%";
+            }
           }
           break;
         }
@@ -945,7 +965,7 @@ chartCanvas.addEventListener("mousedown", (e) => {
   mouseFocus = 5;
   document.body.style.cursor = "grabbing";
 
-  if (e.offsetX < selectOffsetX || !btnActive[selectX]) {
+  if (e.offsetX < selectOffsetX || (!btnActive[selectX] && selectY > -1)) {
     document.body.style.cursor = "default";
     mouseFocus = 1;
     return;
@@ -983,7 +1003,7 @@ chartCanvas.addEventListener("mouseup", (e) => {
     selectY = Math.floor(e.offsetY / 30) - critData.length - 1;
   }
 
-  if (mouseFocus == 3 && btnPressed[selectX]) {
+  if (mouseFocus == 3 && btnPressed[selectX] && btnActive[selectX]) {
     const newNum = prompt(
       "Enter number 0-100",
       btnAccuracy[selectX].toString(),
@@ -1083,9 +1103,11 @@ function drawGameImg(index: number): HTMLCanvasElement {
 
       optionsContainer.classList.remove("open");
 
-      currGame = i;
-      saveState();
-      loadGame(currGame);
+      if (currGame != i) {
+        currGame = i;
+        saveState();
+        loadGame(currGame);
+      }
 
       const allOptions = optionsContainer.querySelectorAll(
         ".option",
