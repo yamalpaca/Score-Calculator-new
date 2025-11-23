@@ -1,6 +1,6 @@
 # RHM Score Calculator
 
-v.0.5.0
+v.0.5.1
 
 yamalpaca
 
@@ -16,6 +16,10 @@ yamalpaca
 ---
 
 ## Change Log
+
+v.0.5.1
+
+- fixed issues with a few minigames
 
 v.0.5.0
 
