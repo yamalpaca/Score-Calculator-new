@@ -1,6 +1,6 @@
 # RHM Score Calculator
 
-v.0.7.1
+v.0.7.2
 
 yamalpaca
 
@@ -17,6 +17,10 @@ yamalpaca
 ---
 
 ## Change Log
+
+v.0.7.2
+
+- moved separators in karate man returns
 
 v.0.7.1
 

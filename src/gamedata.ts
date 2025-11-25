@@ -948,8 +948,8 @@ export const gameData: Game[] = [
       { ...inD, criteria: 2 },
     ],
     separators: [
-      { index: 5 },
-      { index: 13 },
+      { index: 6 },
+      { index: 14 },
     ],
   },
   { // Fillbots 2
