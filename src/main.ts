@@ -270,7 +270,10 @@ function updateData() {
       }
     }
     if (btnType[i - 1] == 8) {
-      if ([0, 6].includes(btnSlider[i - 1]) && gd.inputs[i].combo) {
+      if (
+        [0, 6].includes(btnSlider[i - 1]) && gd.inputs[i].combo &&
+        gd.inputs[i].combotype != 1
+      ) {
         btnActive[i] = false;
       }
     }
