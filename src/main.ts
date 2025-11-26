@@ -353,14 +353,12 @@ function updateData() {
           gd.inputs[i].combotype != 1
         ) {
           btnData[i].active = false;
-          pressCounter++;
         }
         if (
           debugMode && btnData[i - 1].debug <= 60 && gd.inputs[i].combo &&
           gd.inputs[i].combotype != 1
         ) {
           btnData[i].active = false;
-          pressCounter++;
         }
       }
     }
