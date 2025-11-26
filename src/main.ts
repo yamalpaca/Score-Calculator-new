@@ -336,12 +336,14 @@ function updateData() {
           [0, 6].includes(btnData[i - 1].slider) && gd.inputs[i - 1].button == 4
         ) {
           btnData[i].active = false;
+          pressCounter++;
         }
         if (
           debugMode && btnData[i - 1].debug <= 60 &&
           gd.inputs[i - 1].button == 4
         ) {
           btnData[i].active = false;
+          pressCounter++;
         }
       }
       if (btnData[i - 1].type == 8) {
@@ -350,12 +352,14 @@ function updateData() {
           gd.inputs[i].combotype != 1
         ) {
           btnData[i].active = false;
+          pressCounter++;
         }
         if (
           debugMode && btnData[i - 1].debug <= 60 && gd.inputs[i].combo &&
           gd.inputs[i].combotype != 1
         ) {
           btnData[i].active = false;
+          pressCounter++;
         }
       }
     }

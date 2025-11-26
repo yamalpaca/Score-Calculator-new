@@ -1,6 +1,6 @@
 # RHM Score Calculator
 
-v.0.8.0
+v.0.8.1
 
 yamalpaca
 
@@ -17,6 +17,10 @@ yamalpaca
 ---
 
 ## Change Log
+
+v.0.8.1
+
+- fixed press counter
 
 v.0.8.0
 
