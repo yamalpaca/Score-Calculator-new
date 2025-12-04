@@ -1,6 +1,6 @@
 # RHM Score Calculator
 
-v.0.8.1
+v.0.8.2
 
 yamalpaca
 
@@ -17,6 +17,10 @@ yamalpaca
 ---
 
 ## Change Log
+
+v.0.8.2
+
+- fixed working dough 2
 
 v.0.8.1
 
